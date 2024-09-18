@@ -95,8 +95,9 @@ if uploaded_file:
     st.write(splits)
 
     # Embed documents
-    embedded_texts = [embeddings.embed_text(doc.page_content) for doc in splits]
-    embeddings_array = np.array(embedded_texts).astype("float32")
+    texts = [doc.page_content for doc in splits]
+    embeddings_array = embeddings.embed_documents(texts)  # Use the correct method for embeddings
+    embeddings_array = np.array(embeddings_array).astype("float32")
 
     # Create FAISS index
     index = faiss.IndexFlatL2(embeddings_array.shape[1])
@@ -107,7 +108,7 @@ if uploaded_file:
 
     # Create FAISS vector store
     vectorstore = FAISS(
-        embedding_function=embeddings.embed_text,
+        embedding_function=embeddings.embed_documents,
         docstore=docstore,
         index_to_docstore_id={i: i for i in range(len(splits))},
         index=index
