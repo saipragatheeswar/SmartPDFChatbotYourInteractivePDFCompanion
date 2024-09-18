@@ -95,7 +95,8 @@ if uploaded_file:
     st.write(splits)
 
     # Embed documents and index with FAISS
-    embeddings_list = [embeddings.embed_text(doc) for doc in splits]
+    # Use embed_documents instead of embed_text
+    embeddings_list = embeddings.embed_documents([doc.page_content for doc in splits])
     embeddings_array = np.array(embeddings_list).astype("float32")
 
     # Create FAISS index
