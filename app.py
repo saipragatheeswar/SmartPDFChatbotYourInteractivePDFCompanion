@@ -18,7 +18,7 @@ load_dotenv()
 os.environ["huggingface_api"] = os.getenv("huggingface_api")
 groq_api = os.getenv("groq_api")
 
-# Initialize embeddings
+# Initialize embeddings and LLM
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 llm = ChatGroq(groq_api_key=groq_api, model_name="Llama3-8b-8192")
 
@@ -33,16 +33,21 @@ def process_uploaded_file(uploaded_file):
     temppdf = f"./temp.pdf"
     with open(temppdf, "wb") as f:
         f.write(uploaded_file.getvalue())
-
+    
+    # Ensure the file is properly handled and cleaned up after processing
     loader = PyPDFLoader(temppdf)
-    return loader.load()
+    documents = loader.load()
+    
+    # Remove the temporary file
+    os.remove(temppdf)
+    return documents
 
-def create_chains():
+def create_chains(retriever):
     """Create and return the retrieval and question-answer chains."""
     prompt = (
-        "Here you have past chat history and current question from the user. "
-        "Current question may have context from past chat history. "
-        "Please provide your response. Just reformulate the answer with respect to the question."
+        "Here you have past chat history and the current question from the user. "
+        "The current question may have context from past chat history. "
+        "Please provide your response, reformulated with respect to the question."
     )
     q_and_a_prompt = ChatPromptTemplate.from_messages(
         [
@@ -55,10 +60,10 @@ def create_chains():
     history_aware_retriever = create_history_aware_retriever(llm, retriever, q_and_a_prompt)
 
     system_prompt = (
-        "You are an assistant in a chat room. You have to respond to the user's question. "
+        "You are an assistant in a chat room. You must respond to the user's question. "
         "Use the following chat history to generate a response. "
         "If you don't know the answer, just say 'I don't know'. "
-        "Answer should be in the context of the question and also maximum 20 lines. {context}"
+        "Answer should be in the context of the question and no more than 20 lines. {context}"
     )
     qanda_prompt = ChatPromptTemplate.from_messages(
         [
@@ -95,7 +100,7 @@ if uploaded_file:
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
     retriever = vectorstore.as_retriever()
 
-    conversational_rag_chain = create_chains()
+    conversational_rag_chain = create_chains(retriever)
 
     session_id = st.text_input("Session ID", value="default session")
 
