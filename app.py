@@ -94,17 +94,25 @@ if uploaded_file:
     st.write("Document chunks:")
     st.write(splits)
 
-    # Embed documents and index with FAISS
-    embeddings_list = embeddings.embed_documents([doc.page_content for doc in splits])
-    embeddings_array = np.array(embeddings_list).astype("float32")
+    # Embed documents
+    embedded_texts = [embeddings.embed_text(doc.page_content) for doc in splits]
+    embeddings_array = np.array(embedded_texts).astype("float32")
 
     # Create FAISS index
     index = faiss.IndexFlatL2(embeddings_array.shape[1])
     index.add(embeddings_array)
-    
+
+    # Create document store
+    docstore = {i: doc for i, doc in enumerate(splits)}
+
     # Create FAISS vector store
-    vectorstore = FAISS(index=index)
-    vectorstore.documents = splits  # Assign documents manually if needed
+    vectorstore = FAISS(
+        embedding_function=embeddings.embed_text,
+        docstore=docstore,
+        index_to_docstore_id={i: i for i in range(len(splits))},
+        index=index
+    )
+
     retriever = vectorstore.as_retriever()
     st.write("FAISS vectorstore initialized.")
 
