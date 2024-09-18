@@ -92,7 +92,7 @@ if uploaded_file:
     documents = process_uploaded_file(uploaded_file)
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=500)
     splits = text_splitter.split_documents(documents)
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
+    vectorstore = Chroma.from_texts(texts=[doc.page_content for doc in splits], embedding=embeddings)
     retriever = vectorstore.as_retriever()
 
     conversational_rag_chain = create_chains()
