@@ -4,7 +4,6 @@ langchain-community
 pypdf
 pymupdf
 langchain-text-splitters
-chromadb
 langchain_huggingface
 faiss-cpu
 langchain_chroma
