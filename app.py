@@ -1,7 +1,7 @@
 import streamlit as st
-from langchain.chains import create_history_aware_retriever, create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.vectorstores import Chroma
+from langchain_chains import create_history_aware_retriever, create_retrieval_chain
+from langchain_chains.combine_documents import create_stuff_documents_chain
+from langchain_community.vectorstores import Chroma
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -18,7 +18,7 @@ load_dotenv()
 os.environ["huggingface_api"] = os.getenv("huggingface_api")
 groq_api = os.getenv("groq_api")
 
-# Initialize embeddings and LLM
+# Initialize embeddings
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 llm = ChatGroq(groq_api_key=groq_api, model_name="Llama3-8b-8192")
 
@@ -33,21 +33,16 @@ def process_uploaded_file(uploaded_file):
     temppdf = f"./temp.pdf"
     with open(temppdf, "wb") as f:
         f.write(uploaded_file.getvalue())
-    
-    # Ensure the file is properly handled and cleaned up after processing
-    loader = PyPDFLoader(temppdf)
-    documents = loader.load()
-    
-    # Remove the temporary file
-    os.remove(temppdf)
-    return documents
 
-def create_chains(retriever):
+    loader = PyPDFLoader(temppdf)
+    return loader.load()
+
+def create_chains():
     """Create and return the retrieval and question-answer chains."""
     prompt = (
-        "Here you have past chat history and the current question from the user. "
-        "The current question may have context from past chat history. "
-        "Please provide your response, reformulated with respect to the question."
+        "Here you have past chat history and current question from the user. "
+        "Current question may have context from past chat history. "
+        "Please provide your response. Just reformulate the answer with respect to the question."
     )
     q_and_a_prompt = ChatPromptTemplate.from_messages(
         [
@@ -60,10 +55,10 @@ def create_chains(retriever):
     history_aware_retriever = create_history_aware_retriever(llm, retriever, q_and_a_prompt)
 
     system_prompt = (
-        "You are an assistant in a chat room. You must respond to the user's question. "
+        "You are an assistant in a chat room. You have to respond to the user's question. "
         "Use the following chat history to generate a response. "
         "If you don't know the answer, just say 'I don't know'. "
-        "Answer should be in the context of the question and no more than 20 lines. {context}"
+        "Answer should be in the context of the question and also maximum 20 lines. {context}"
     )
     qanda_prompt = ChatPromptTemplate.from_messages(
         [
@@ -100,7 +95,7 @@ if uploaded_file:
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
     retriever = vectorstore.as_retriever()
 
-    conversational_rag_chain = create_chains(retriever)
+    conversational_rag_chain = create_chains()
 
     session_id = st.text_input("Session ID", value="default session")
 
