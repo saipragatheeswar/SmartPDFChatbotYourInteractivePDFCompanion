@@ -91,8 +91,7 @@ if uploaded_file:
     documents = process_uploaded_file(uploaded_file)
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=500)
     splits = text_splitter.split_documents(documents)
-    st.write("Document chunks:")
-    st.write(splits)
+    
 
     # Embed documents
     texts = [doc.page_content for doc in splits]
@@ -128,7 +127,7 @@ if uploaded_file:
             {"input": user_input},
             config={"configurable": {"session_id": session_id}}
         )
-        st.success("Assistant: " + response["answer"])
+        st.success("Assistant: " + response)
     else:
         st.warning("Please enter your question.")
 else:
