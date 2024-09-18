@@ -1,0 +1,12 @@
+streamlit
+langchain
+langchain-community
+pypdf
+pymupdf
+langchain-text-splitters
+chromadb
+langchain_huggingface
+faiss-cpu
+langchain_chroma
+langchain-groq
+langchain-core
