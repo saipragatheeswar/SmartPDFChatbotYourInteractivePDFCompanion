@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-os.environ["HUGGINGFACE_API"] = os.getenv("HUGGINGFACE_API")
-groq_api_key = os.getenv("GROQ_API_KEY")
+os.environ["huggingface_api"] = os.getenv("huggingface_api")
+groq_api_key = os.getenv("groq_api")
 
 # Initialize embeddings and LLM
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
