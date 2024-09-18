@@ -10,7 +10,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.runnables.history import RunnableWithMessageHistory
-
+import chromadb
 import os
 from dotenv import load_dotenv
 
