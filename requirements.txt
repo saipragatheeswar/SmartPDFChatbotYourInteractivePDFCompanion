@@ -11,4 +11,4 @@ langchain_chroma
 langchain-groq
 langchain-core
 protobuf==3.20.3
-python
+pysqlite3
