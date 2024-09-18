@@ -1,7 +1,7 @@
 import streamlit as st
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -10,13 +10,15 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.runnables.history import RunnableWithMessageHistory
+import faiss
+import numpy as np
 import os
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-os.environ["huggingface_api"] = os.getenv("huggingface_api")
-groq_api_key = os.getenv("groq_api")
+os.environ["HUGGINGFACE_API"] = os.getenv("HUGGINGFACE_API")
+groq_api_key = os.getenv("GROQ_API_KEY")
 
 # Initialize embeddings and LLM
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
@@ -92,9 +94,16 @@ if uploaded_file:
     st.write("Document chunks:")
     st.write(splits)
 
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
+    # Embed documents and index with FAISS
+    embeddings_list = [embeddings.embed_text(doc) for doc in splits]
+    embeddings_array = np.array(embeddings_list).astype("float32")
+
+    # Create FAISS index
+    index = faiss.IndexFlatL2(embeddings_array.shape[1])
+    index.add(embeddings_array)
+    vectorstore = FAISS(index=index, documents=splits)
     retriever = vectorstore.as_retriever()
-    st.write("Vectorstore initialized.")
+    st.write("FAISS vectorstore initialized.")
 
     conversational_rag_chain = create_chains(retriever)
 
