@@ -96,11 +96,11 @@ if uploaded_file:
 
     # Embed documents
     texts = [doc.page_content for doc in splits]
-    embeddings_array = embeddings.embed_documents(texts)  # Use the correct method for embeddings
-    embeddings_array = np.array(embeddings_array).astype("float32")
+    embeddings_array = np.array(embeddings.embed_documents(texts)).astype("float32")
 
     # Create FAISS index
-    index = faiss.IndexFlatL2(embeddings_array.shape[1])
+    dimension = embeddings_array.shape[1]
+    index = faiss.IndexFlatL2(dimension)
     index.add(embeddings_array)
 
     # Create document store
