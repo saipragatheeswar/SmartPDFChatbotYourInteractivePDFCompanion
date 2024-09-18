@@ -93,7 +93,7 @@ if uploaded_file:
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=500)
     splits = text_splitter.split_documents(documents)
     st.write(splits)
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
+    vectorstore = Chroma.afrom_documents(documents=splits, embedding=embeddings)
     st.write(vectorstore)
     retriever = vectorstore.as_retriever()
 
