@@ -19,8 +19,9 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 os.environ["huggingface_api"] = os.getenv("huggingface_api")
-groq_api_key = os.getenv("groq_api")
 
+st.secrets["groq_api_key"]
+groq_api_key = os.getenv("groq_api")
 # Initialize embeddings and LLM
 llm = ChatGroq(groq_api_key=groq_api_key, model_name="Llama3-8b-8192")
 
